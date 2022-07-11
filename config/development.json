@@ -9,7 +9,7 @@
   },
   {
     "name": "POSTGRES_DB",
-    "value": "development"
+    "value": "postgres"
   },
   {
     "name": "POSTGRES_USER",
