@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, jsonify
+
 from application.models import User
 
 
@@ -16,11 +17,15 @@ def create_app(config_name):
 
     @app.route('/')
     def hello_world():
-        return "Hello, World!"
+        response = "Hello, World!"
+        return jsonify(response)
 
     @app.route("/users")
     def users():
         num_users = User.query.count()
-        return f"Number of users: {num_users}"
+        response = {
+            "Number of users": num_users
+        }
+        return jsonify(response)
 
     return app

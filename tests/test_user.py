@@ -1,4 +1,5 @@
 import pytest
+
 from sqlalchemy.exc import IntegrityError
 
 from application.models import User
@@ -60,7 +61,7 @@ def test__users_count_endpoint(client, database):
     assert response.status_code == 200
 
     # Case for correct empty output
-    assert response.data == b'Number of users: 0'
+    assert response.get_json() == {'Number of users': 0}
 
     # Case for correct output after user creation
     email = "some.email@server.com"
@@ -69,4 +70,4 @@ def test__users_count_endpoint(client, database):
     database.session.commit()
 
     response = client.get('/users')
-    assert response.data == b'Number of users: 1'
+    assert response.get_json() == {'Number of users': 1}
