@@ -5,9 +5,10 @@ from application.models import Banana
 ma = Marshmallow()
 
 
-class BananaSchema(ma.Schema):
+class BananaSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
-        fields = ('id', 'color', 'origins')
+        model = Banana
+        load_instance = True
 
 
 banana_schema = BananaSchema()
