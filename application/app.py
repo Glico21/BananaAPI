@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, request
 from marshmallow import ValidationError
 
-from application.models import User, Banana
-from application.schemas import banana_schema, bananas_schema
+from application.models import User, Banana, Palm
+from application.schemas import banana_schema, bananas_schema, palm_schema, palms_schema
 
 
 def create_app(config_name):
@@ -95,4 +95,12 @@ def create_app(config_name):
             db.session.commit()
             response = banana_schema.dump(Banana.query.get(banana.id))
             return response, 201
+
+    @app.route("/palm/<id>", methods=['GET'])
+    def palm(id):
+        if request.method == 'GET':
+            palm = Palm.query.get_or_404(id)
+            response = palm_schema.dump(palm)
+            return response
+
     return app
