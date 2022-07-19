@@ -127,3 +127,29 @@ def test__palm_getting_endpoint(database, client):
     response = client.get('/palm/2')
 
     assert response.get_json() == second_expected_response
+
+
+def test__palm_delete_endpoint(client, database):
+    # Palms attributes
+    location = "New Guinea"
+    created_at = "2011-01-01 00:00:00"
+    max_banana_in_bundle = 2
+    palm = Palm(location=location, created_at=created_at, max_banana_in_bundle=max_banana_in_bundle)
+    database.session.add(palm)
+    database.session.commit()
+
+    # Case for removing existing palm
+    response = client.delete('/palm/1')
+
+    assert response.status_code == 204
+
+    palm_count = Palm.query.count()
+    assert palm_count == 0
+
+    # Case for removing non-existing palm
+
+    response = client.delete('/palm/1')
+    expected_output = {"Message": "Not found palm with id: 1"}
+
+    assert response.status_code == 404
+    assert response.get_json() == expected_output
