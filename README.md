@@ -122,7 +122,16 @@ You can run development mode by this command
    ./manage.py compose up
    ```
 This command will start the application on localhost [0.0.0.0:5000](http://0.0.0.0:5000).
-You can check out the available endpoints and see how it all works.
+
+After that, you need to migrate to initialize all the necessary tables for the database.
+   ```sh
+   ./manage.py flask db migrate -m "Some message"
+   ```
+And upgrade
+   ```sh
+   ./manage.py flask db upgrade
+   ```
+You can check out the [available endpoints](https://github.com/Glico21/BananaAPI/edit/main/README.md#endpoints-list) and see how it all works.
 
 ### Production
 Production mode also runs the application in a separate container, but it can be scalable by nginx and gunicorn.
@@ -144,9 +153,18 @@ You can run separate tests for the application. To do this, run the following co
 A separate database is used for the tests, which is cleared automatically after each test is performed.
 
 
+
+
+<!-- Endpoints -->
+## Endpoints list
+| URL/Method | GET | POST | PATCH | DELETE |
+| --- | --- | --- | --- | --- |
+| `/` | Return `Hello, World!` |
+| `/users` | Return count of users in database |
+| `/banana` | Return all banana objects | Create a banana object |
+| `/banana/<id>` | Return a banana object | | Update a banana object | Delete a banana object |
+
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 <!-- ROADMAP -->
 ## Roadmap
@@ -177,6 +195,16 @@ Don't forget to give the project a star! Thanks again!
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
+<!-- CONTACT -->
+## Contact me
+
+Boyko Dmitriy - 21glicodin@gmail.com
+
+Project Link: [https://github.com/Glico21/BananaAPI](https://github.com/Glico21/BananaAPI)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
