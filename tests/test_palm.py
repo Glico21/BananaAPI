@@ -3,7 +3,7 @@ import json
 import pytest
 from sqlalchemy.exc import IntegrityError
 
-from application.models import Palm
+from application.models import Palm, Banana
 
 
 def test__create_palm(database):
@@ -59,3 +59,28 @@ def test__banana_with_empty_fields(database):
         database.session.add(third_palm)
         database.session.commit()
     database.session.rollback()
+
+
+def test__palm_with_banana(database):
+    # Palm attributes
+    location = "New Guinea"
+    created_at = "2011-01-01 00:00:00"
+    max_banana_in_bundle = 2
+
+    # Banana attributes
+    color = "Yellow"
+    palm_id = 1
+
+    # Case of creation palm tree and a banana and the connections between them
+    palm = Palm(location=location, created_at=created_at, max_banana_in_bundle=max_banana_in_bundle)
+
+    database.session.add(palm)
+    database.session.commit()
+
+    banana = Banana(color=color, palm=palm_id)
+
+    database.session.add(banana)
+    database.session.commit()
+
+    assert banana.palm == palm.id
+    assert banana.id == palm.bananas.first().id
