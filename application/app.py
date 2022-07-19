@@ -96,11 +96,23 @@ def create_app(config_name):
             response = banana_schema.dump(Banana.query.get(banana.id))
             return response, 201
 
-    @app.route("/palm/<id>", methods=['GET'])
+    @app.route("/palm/<id>", methods=['GET', 'DELETE'])
     def palm(id):
         if request.method == 'GET':
             palm = Palm.query.get_or_404(id)
             response = palm_schema.dump(palm)
             return response
 
+        elif request.method == 'DELETE':
+            palm = Palm.query.filter(Palm.id == id).one_or_none()
+            if palm:
+                db.session.delete(palm)
+                db.session.commit()
+                response = {"Message": "Successfully deleted palm"}
+                return response, 204
+            else:
+                response = {
+                    "Message": f"Not found palm with id: {id}"
+                }
+                return response, 404
     return app
