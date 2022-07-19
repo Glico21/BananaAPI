@@ -84,3 +84,46 @@ def test__palm_with_banana(database):
 
     assert banana.palm == palm.id
     assert banana.id == palm.bananas.first().id
+
+
+def test__palm_getting_endpoint(database, client):
+    # Palms attributes
+    first_location = "New Guinea"
+    first_created_at = "2011-01-01 00:00:00"
+    first_max_banana_in_bundle = 2
+    second_location = "Brazil"
+    second_created_at = "2015-01-01 00:00:00"
+    second_max_banana_in_bundle = 3
+
+    first_palm = Palm(location=first_location,
+                      created_at=first_created_at,
+                      max_banana_in_bundle=first_max_banana_in_bundle)
+    second_palm = Palm(location=second_location,
+                       created_at=second_created_at,
+                       max_banana_in_bundle=second_max_banana_in_bundle)
+
+    # Case for getting non-existent palm by id
+    response = client.get('/palm/1')
+
+    assert response.status_code == 404
+    assert response.get_json() is None
+
+    # Cases for success getting a specific palm
+    database.session.add(first_palm)
+    database.session.add(second_palm)
+    database.session.commit()
+
+    response = client.get('/palm/1')
+
+    assert response.status_code == 200
+
+    first_expected_response = {"id": 1, "location": "New Guinea",
+                               "created_at": "2011-01-01T00:00:00", "max_banana_in_bundle": 2}
+    second_expected_response = {"id": 2, "location": "Brazil",
+                                "created_at": "2015-01-01T00:00:00", "max_banana_in_bundle": 3}
+
+    assert response.get_json() == first_expected_response
+
+    response = client.get('/palm/2')
+
+    assert response.get_json() == second_expected_response
