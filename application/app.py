@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, jsonify, request
 from marshmallow import ValidationError
 
@@ -115,4 +117,41 @@ def create_app(config_name):
                     "Message": f"Not found palm with id: {id}"
                 }
                 return response, 404
+
+    @app.route("/palm", methods=["POST"])
+    def handle_palm():
+        if request.method == "POST":
+            body = request.get_json()
+            if not body:
+                response = {"Message": "No input data provided"}
+                return response, 400
+
+            try:
+                location = body["location"]
+            except Exception as e:
+                response = {'location': ['Missing data for required field.']}
+                return response, 422
+
+            try:
+                max_banana_in_bundle = body["max_banana_in_bundle"]
+            except Exception as e:
+                response = {'max_banana_in_bundle': ['Missing data for required field.']}
+                return response, 422
+
+            palm = {
+                "location": location,
+                "max_banana_in_bundle": max_banana_in_bundle
+            }
+
+            if 'age' in body:
+                age = body["age"]
+                now = datetime.now()
+                created_at = f'{now.year - age}-{now.month}-{now.day} {now.hour}:{now.minute}:{now.second}'
+                palm.update({"created_at": created_at})
+
+            palm = Palm(**palm)
+            db.session.add(palm)
+            db.session.commit()
+            response = palm_schema.dump(Palm.query.get(palm.id))
+            return response, 201
     return app
