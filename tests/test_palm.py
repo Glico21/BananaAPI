@@ -1,5 +1,7 @@
 import json
 
+from datetime import datetime
+
 import pytest
 from sqlalchemy.exc import IntegrityError
 
@@ -153,3 +155,73 @@ def test__palm_delete_endpoint(client, database):
 
     assert response.status_code == 404
     assert response.get_json() == expected_output
+
+
+def test__palm_creation_endpoint(client, database):
+    location = "New Guinea"
+    age = 7
+    max_banana_in_bundle = 2
+    empty_body = {}
+    body = {
+        "location": location,
+        "age": age,
+        "max_banana_in_bundle": max_banana_in_bundle
+    }
+
+    # Case for adding empty body
+    response = client.post('/palm',
+                           data=json.dumps(empty_body),
+                           headers={"Content-Type": "application/json"})
+
+    assert response.status_code == 400
+    assert response.get_json() == {'Message': 'No input data provided'}
+
+    # Cases for adding wrong body
+    first_wrong_body = {
+        "location": location,
+        "age": age
+    }
+    second_wrong_body = {
+        "age": age
+    }
+    third_wrong_body = {
+        "origins": "New Guinea",
+        "max_banana_in_bundle": max_banana_in_bundle
+    }
+
+    response = client.post('/palm',
+                           data=json.dumps(first_wrong_body),
+                           headers={"Content-Type": "application/json"})
+
+    assert response.status_code == 422
+    assert response.get_json() == {'max_banana_in_bundle': ['Missing data for required field.']}
+
+    response = client.post('/palm',
+                           data=json.dumps(second_wrong_body),
+                           headers={"Content-Type": "application/json"})
+
+    assert response.status_code == 422
+    assert response.get_json() == {'location': ['Missing data for required field.']}
+
+    response = client.post('/palm',
+                           data=json.dumps(third_wrong_body),
+                           headers={"Content-Type": "application/json"})
+
+    assert response.status_code == 422
+    assert response.get_json() == {'location': ['Missing data for required field.']}
+
+    # Case for success creation and age to datetime converting
+    now = datetime.now()
+
+    response = client.post('/palm',
+                           data=json.dumps(body),
+                           headers={"Content-Type": "application/json"})
+
+    output = response.get_json()
+
+    assert response.status_code == 201
+    assert output['location'] == "New Guinea"
+    assert output['max_banana_in_bundle'] == 2
+
+    created_data = datetime.strptime(output['created_at'], '%Y-%m-%dT%H:%M:%S')
+    assert created_data.year == now.year - age
