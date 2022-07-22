@@ -173,7 +173,7 @@ A separate database is used for the tests, which is cleared automatically after 
 
 In the future it is planned to develop this project a little bit.
 
-- [ ] Add a palm tree model, which will be linked to the banana model.
+- [x] Add a palm tree model, which will be linked to the banana model.
 - [ ] Add more fields for the banana
 - [ ] Expand user model
 - [ ] Add simple authorization and access rights
