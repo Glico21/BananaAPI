@@ -161,8 +161,10 @@ A separate database is used for the tests, which is cleared automatically after 
 | --- | --- | --- | --- | --- |
 | `/` | Return `Hello, World!` |
 | `/users` | Return count of users in database |
-| `/banana` | Return all banana objects | Create a banana object |
-| `/banana/<id>` | Return a banana object | | Update a banana object | Delete a banana object |
+| `/bananas` | Return all banana objects | Create a banana object |
+| `/palms` | Return all palms objects | Create a palm object |
+| `/bananas/<id>` | Return a specific banana object | | Update a banana object | Delete a banana object |
+| `/palms/<id>` | Return a specific palm object | | Update a palm object | Delete a palm object |
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
