@@ -98,12 +98,39 @@ def create_app(config_name):
             response = banana_schema.dump(Banana.query.get(banana.id))
             return response, 201
 
-    @app.route("/palm/<id>", methods=['GET', 'DELETE'])
+    @app.route("/palm/<id>", methods=['GET', 'PATCH', 'DELETE'])
     def palm(id):
         if request.method == 'GET':
             palm = Palm.query.get_or_404(id)
             response = palm_schema.dump(palm)
             return response
+
+        elif request.method == 'PATCH':
+            palm = Palm.query.filter(Palm.id == id).one_or_none()
+            body = request.get_json()
+            if not body:
+                response = {"Message": "No input data provided"}
+                return response, 400
+
+            if 'age' in body:
+                age = body["age"]
+                now = datetime.now()
+                created_at = f'{now.year - age}-{now.month}-{now.day} {now.hour}:{now.minute}:{now.second}'
+                body.update({"created_at": created_at})
+                del body['age']
+
+            if palm:
+                try:
+                    data = palm_schema.load(body, partial=('location', 'max_banana_in_bundle',))
+                except ValidationError as e:
+                    return e.messages, 422
+            else:
+                response = {"Message": f"Not found palm with id: {id}"}
+                return response, 404
+
+            Palm.query.filter(Palm.id == id).update(body)
+            db.session.commit()
+            return palm_schema.dump(palm), 200
 
         elif request.method == 'DELETE':
             palm = Palm.query.filter(Palm.id == id).one_or_none()
