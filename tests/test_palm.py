@@ -313,3 +313,49 @@ def test__palm_update_endpoint(client, database):
 
     assert response.status_code == 422
     assert response.get_json() == {'max_banana_in_bundle': ['Not a valid integer.']}
+
+
+def test__all_banana_getting_endpoint(client, database):
+    first_location = "New Guinea"
+    second_location = "Brazil"
+    first_created_at = "2011-01-01 00:00:00"
+    second_created_at = "2021-01-01 00:00:00"
+    first_max_banana_in_bundle = 2
+    second_max_banana_in_bundle = 42
+    first_palm = Palm(location=first_location,
+                      created_at=first_created_at,
+                      max_banana_in_bundle=first_max_banana_in_bundle)
+    second_palm = Palm(location=second_location,
+                      created_at=second_created_at,
+                      max_banana_in_bundle=second_max_banana_in_bundle)
+
+    # Case for success status of endpoint
+    response = client.get('/palm')
+
+    assert response.status_code == 200
+
+    # Case for empty palms list output
+    assert response.get_json() == []
+
+    # Cases for correct palms list output
+    database.session.add(first_palm)
+    database.session.commit()
+
+    response = client.get('/palm')
+    expected_response = [{"id": 1,
+                          "location": "New Guinea",
+                          "created_at": "2011-01-01T00:00:00",
+                          "max_banana_in_bundle": 2}]
+
+    assert response.get_json() == expected_response
+
+    database.session.add(second_palm)
+    database.session.commit()
+
+    response = client.get('/palm')
+    expected_response = [
+        {"id": 1, "location": "New Guinea", "created_at": "2011-01-01T00:00:00", "max_banana_in_bundle": 2},
+        {"id": 2, "location": "Brazil", "created_at": "2021-01-01T00:00:00", "max_banana_in_bundle": 42}
+    ]
+
+    assert response.get_json() == expected_response
