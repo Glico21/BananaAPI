@@ -225,3 +225,91 @@ def test__palm_creation_endpoint(client, database):
 
     created_data = datetime.strptime(output['created_at'], '%Y-%m-%dT%H:%M:%S')
     assert created_data.year == now.year - age
+
+
+def test__palm_update_endpoint(client, database):
+    location = "New Guinea"
+    created_at = "2011-01-01 00:00:00"
+    max_banana_in_bundle = 2
+    palm = Palm(location=location, created_at=created_at, max_banana_in_bundle=max_banana_in_bundle)
+    database.session.add(palm)
+    database.session.commit()
+
+    response = client.get('/palm/1')
+
+    assert response.status_code == 200
+
+    # Case for patch location field
+    update_body = {
+        "location": "Brazil"
+    }
+
+    response = client.patch('/palm/1',
+                            data=json.dumps(update_body),
+                            headers={"Content-Type": "application/json"})
+    expected_output = {"id": 1, "location": "Brazil", "created_at": "2011-01-01T00:00:00", "max_banana_in_bundle": 2}
+
+    assert response.status_code == 200
+    assert response.get_json() == expected_output
+
+    # Case for patch max_banana_in_bundle field
+    update_body = {
+        "max_banana_in_bundle": 3
+    }
+
+    response = client.patch('/palm/1',
+                            data=json.dumps(update_body),
+                            headers={"Content-Type": "application/json"})
+    expected_output = {"id": 1, "location": "Brazil", "created_at": "2011-01-01T00:00:00", "max_banana_in_bundle": 3}
+
+    assert response.status_code == 200
+    assert response.get_json() == expected_output
+
+    # Case for update created_at field
+    age = 10
+    update_body = {
+        "age": age
+    }
+
+    response = client.patch('/palm/1',
+                            data=json.dumps(update_body),
+                            headers={"Content-Type": "application/json"})
+    output = response.get_json()
+
+    assert response.status_code == 200
+    assert output['location'] == "Brazil"
+    assert output['max_banana_in_bundle'] == 3
+
+    now = datetime.now()
+    created_data = datetime.strptime(output['created_at'], '%Y-%m-%dT%H:%M:%S')
+    assert created_data.year == now.year - age
+
+    # Case for wrong palm id
+    response = client.patch('/palm/2',
+                            data=json.dumps(update_body),
+                            headers={"Content-Type": "application/json"})
+    expected_output = {"Message": "Not found palm with id: 2"}
+
+    assert response.status_code == 404
+    assert response.get_json() == expected_output
+
+    # Case for patch empty data
+
+    response = client.patch('/palm/1',
+                            data=json.dumps({}),
+                            headers={"Content-Type": "application/json"})
+
+    assert response.status_code == 400
+    assert response.get_json() == {"Message": "No input data provided"}
+
+    # Case for irrelevant data
+
+    irrelevant_body = {
+        "max_banana_in_bundle": 'wrong'
+    }
+    response = client.patch('/palm/1',
+                            data=json.dumps(irrelevant_body),
+                            headers={"Content-Type": "application/json"})
+
+    assert response.status_code == 422
+    assert response.get_json() == {'max_banana_in_bundle': ['Not a valid integer.']}
