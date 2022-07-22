@@ -145,8 +145,13 @@ def create_app(config_name):
                 }
                 return response, 404
 
-    @app.route("/palm", methods=["POST"])
+    @app.route("/palm", methods=["GET", "POST"])
     def handle_palm():
+        if request.method == 'GET':
+            palms = Palm.query.all()
+            response = jsonify(palms_schema.dump(palms))
+            return response
+
         if request.method == "POST":
             body = request.get_json()
             if not body:
