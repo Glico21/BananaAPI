@@ -105,7 +105,7 @@ def test__palm_getting_endpoint(database, client):
                        max_banana_in_bundle=second_max_banana_in_bundle)
 
     # Case for getting non-existent palm by id
-    response = client.get('/palm/1')
+    response = client.get('/palms/1')
 
     assert response.status_code == 404
     assert response.get_json() is None
@@ -115,7 +115,7 @@ def test__palm_getting_endpoint(database, client):
     database.session.add(second_palm)
     database.session.commit()
 
-    response = client.get('/palm/1')
+    response = client.get('/palms/1')
 
     assert response.status_code == 200
 
@@ -126,7 +126,7 @@ def test__palm_getting_endpoint(database, client):
 
     assert response.get_json() == first_expected_response
 
-    response = client.get('/palm/2')
+    response = client.get('/palms/2')
 
     assert response.get_json() == second_expected_response
 
@@ -141,7 +141,7 @@ def test__palm_delete_endpoint(client, database):
     database.session.commit()
 
     # Case for removing existing palm
-    response = client.delete('/palm/1')
+    response = client.delete('/palms/1')
 
     assert response.status_code == 204
 
@@ -150,7 +150,7 @@ def test__palm_delete_endpoint(client, database):
 
     # Case for removing non-existing palm
 
-    response = client.delete('/palm/1')
+    response = client.delete('/palms/1')
     expected_output = {"Message": "Not found palm with id: 1"}
 
     assert response.status_code == 404
@@ -169,7 +169,7 @@ def test__palm_creation_endpoint(client, database):
     }
 
     # Case for adding empty body
-    response = client.post('/palm',
+    response = client.post('/palms',
                            data=json.dumps(empty_body),
                            headers={"Content-Type": "application/json"})
 
@@ -189,21 +189,21 @@ def test__palm_creation_endpoint(client, database):
         "max_banana_in_bundle": max_banana_in_bundle
     }
 
-    response = client.post('/palm',
+    response = client.post('/palms',
                            data=json.dumps(first_wrong_body),
                            headers={"Content-Type": "application/json"})
 
     assert response.status_code == 422
     assert response.get_json() == {'max_banana_in_bundle': ['Missing data for required field.']}
 
-    response = client.post('/palm',
+    response = client.post('/palms',
                            data=json.dumps(second_wrong_body),
                            headers={"Content-Type": "application/json"})
 
     assert response.status_code == 422
     assert response.get_json() == {'location': ['Missing data for required field.']}
 
-    response = client.post('/palm',
+    response = client.post('/palms',
                            data=json.dumps(third_wrong_body),
                            headers={"Content-Type": "application/json"})
 
@@ -213,7 +213,7 @@ def test__palm_creation_endpoint(client, database):
     # Case for success creation and age to datetime converting
     now = datetime.now()
 
-    response = client.post('/palm',
+    response = client.post('/palms',
                            data=json.dumps(body),
                            headers={"Content-Type": "application/json"})
 
@@ -235,7 +235,7 @@ def test__palm_update_endpoint(client, database):
     database.session.add(palm)
     database.session.commit()
 
-    response = client.get('/palm/1')
+    response = client.get('/palms/1')
 
     assert response.status_code == 200
 
@@ -244,7 +244,7 @@ def test__palm_update_endpoint(client, database):
         "location": "Brazil"
     }
 
-    response = client.patch('/palm/1',
+    response = client.patch('/palms/1',
                             data=json.dumps(update_body),
                             headers={"Content-Type": "application/json"})
     expected_output = {"id": 1, "location": "Brazil", "created_at": "2011-01-01T00:00:00", "max_banana_in_bundle": 2}
@@ -257,7 +257,7 @@ def test__palm_update_endpoint(client, database):
         "max_banana_in_bundle": 3
     }
 
-    response = client.patch('/palm/1',
+    response = client.patch('/palms/1',
                             data=json.dumps(update_body),
                             headers={"Content-Type": "application/json"})
     expected_output = {"id": 1, "location": "Brazil", "created_at": "2011-01-01T00:00:00", "max_banana_in_bundle": 3}
@@ -271,7 +271,7 @@ def test__palm_update_endpoint(client, database):
         "age": age
     }
 
-    response = client.patch('/palm/1',
+    response = client.patch('/palms/1',
                             data=json.dumps(update_body),
                             headers={"Content-Type": "application/json"})
     output = response.get_json()
@@ -285,7 +285,7 @@ def test__palm_update_endpoint(client, database):
     assert created_data.year == now.year - age
 
     # Case for wrong palm id
-    response = client.patch('/palm/2',
+    response = client.patch('/palms/2',
                             data=json.dumps(update_body),
                             headers={"Content-Type": "application/json"})
     expected_output = {"Message": "Not found palm with id: 2"}
@@ -295,7 +295,7 @@ def test__palm_update_endpoint(client, database):
 
     # Case for patch empty data
 
-    response = client.patch('/palm/1',
+    response = client.patch('/palms/1',
                             data=json.dumps({}),
                             headers={"Content-Type": "application/json"})
 
@@ -307,7 +307,7 @@ def test__palm_update_endpoint(client, database):
     irrelevant_body = {
         "max_banana_in_bundle": 'wrong'
     }
-    response = client.patch('/palm/1',
+    response = client.patch('/palms/1',
                             data=json.dumps(irrelevant_body),
                             headers={"Content-Type": "application/json"})
 
@@ -330,7 +330,7 @@ def test__all_banana_getting_endpoint(client, database):
                       max_banana_in_bundle=second_max_banana_in_bundle)
 
     # Case for success status of endpoint
-    response = client.get('/palm')
+    response = client.get('/palms')
 
     assert response.status_code == 200
 
@@ -341,7 +341,7 @@ def test__all_banana_getting_endpoint(client, database):
     database.session.add(first_palm)
     database.session.commit()
 
-    response = client.get('/palm')
+    response = client.get('/palms')
     expected_response = [{"id": 1,
                           "location": "New Guinea",
                           "created_at": "2011-01-01T00:00:00",
@@ -352,7 +352,7 @@ def test__all_banana_getting_endpoint(client, database):
     database.session.add(second_palm)
     database.session.commit()
 
-    response = client.get('/palm')
+    response = client.get('/palms')
     expected_response = [
         {"id": 1, "location": "New Guinea", "created_at": "2011-01-01T00:00:00", "max_banana_in_bundle": 2},
         {"id": 2, "location": "Brazil", "created_at": "2021-01-01T00:00:00", "max_banana_in_bundle": 42}

@@ -35,7 +35,7 @@ def create_app(config_name):
         }
         return jsonify(response)
 
-    @app.route("/banana/<id>", methods=["GET", "PATCH", "DELETE"])
+    @app.route("/bananas/<id>", methods=["GET", "PATCH", "DELETE"])
     def banana(id):
         if request.method == 'GET':
             banana = Banana.query.get_or_404(id)
@@ -74,7 +74,7 @@ def create_app(config_name):
                 }
                 return response, 404
 
-    @app.route("/banana", methods=["GET", "POST"])
+    @app.route("/bananas", methods=["GET", "POST"])
     def handle_banana():
         if request.method == 'GET':
             bananas = Banana.query.all()
@@ -98,7 +98,7 @@ def create_app(config_name):
             response = banana_schema.dump(Banana.query.get(banana.id))
             return response, 201
 
-    @app.route("/palm/<id>", methods=['GET', 'PATCH', 'DELETE'])
+    @app.route("/palms/<id>", methods=['GET', 'PATCH', 'DELETE'])
     def palm(id):
         if request.method == 'GET':
             palm = Palm.query.get_or_404(id)
@@ -145,7 +145,7 @@ def create_app(config_name):
                 }
                 return response, 404
 
-    @app.route("/palm", methods=["GET", "POST"])
+    @app.route("/palms", methods=["GET", "POST"])
     def handle_palm():
         if request.method == 'GET':
             palms = Palm.query.all()

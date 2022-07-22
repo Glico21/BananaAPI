@@ -58,7 +58,7 @@ def test__all_banana_getting_endpoint(client, database):
     second_banana = Banana(color=second_color, origins=origins)
 
     # Case for success status of endpoint
-    response = client.get('/banana')
+    response = client.get('/bananas')
 
     assert response.status_code == 200
 
@@ -69,7 +69,7 @@ def test__all_banana_getting_endpoint(client, database):
     database.session.add(first_banana)
     database.session.commit()
 
-    response = client.get('/banana')
+    response = client.get('/bananas')
     expected_response = [{"id": 1, "color": "Yellow", "origins": "New Guinea"}]
 
     assert response.get_json() == expected_response
@@ -77,7 +77,7 @@ def test__all_banana_getting_endpoint(client, database):
     database.session.add(second_banana)
     database.session.commit()
 
-    response = client.get('/banana')
+    response = client.get('/bananas')
     expected_response = [
         {"id": 1, "color": "Yellow", "origins": "New Guinea"},
         {"id": 2, "color": "Black", "origins": "New Guinea"}
@@ -94,7 +94,7 @@ def test__banana_getting_endpoint(client, database):
     second_banana = Banana(color=second_color, origins=origins)
 
     # Case for getting non-existent banana by id
-    response = client.get('/banana/1')
+    response = client.get('/bananas/1')
 
     assert response.status_code == 404
     assert response.get_json() is None
@@ -104,7 +104,7 @@ def test__banana_getting_endpoint(client, database):
     database.session.add(second_banana)
     database.session.commit()
 
-    response = client.get('/banana/1')
+    response = client.get('/bananas/1')
 
     assert response.status_code == 200
 
@@ -112,7 +112,7 @@ def test__banana_getting_endpoint(client, database):
 
     assert response.get_json() == first_expected_response
 
-    response = client.get('/banana/2')
+    response = client.get('/bananas/2')
     expected_response = {"id": 2, "color": "Black", "origins": "New Guinea"}
 
     assert response.get_json() == expected_response
@@ -128,7 +128,7 @@ def test__banana_creation_endpoint(client, database):
     }
 
     # Case for adding empty body
-    response = client.post('/banana',
+    response = client.post('/bananas',
                            data=json.dumps(empty_body),
                            headers={"Content-Type": "application/json"})
 
@@ -140,7 +140,7 @@ def test__banana_creation_endpoint(client, database):
         "origins": "New Guinea"
     }
 
-    response = client.post('/banana',
+    response = client.post('/bananas',
                            data=json.dumps(wrong_body),
                            headers={"Content-Type": "application/json"})
 
@@ -148,7 +148,7 @@ def test__banana_creation_endpoint(client, database):
     assert response.get_json() == {'color': ['Missing data for required field.']}
 
     # Case for successfully creation of new banana
-    response = client.post('/banana',
+    response = client.post('/bananas',
                            data=json.dumps(body),
                            headers={"Content-Type": "application/json"})
 
@@ -170,7 +170,7 @@ def test__banana_update_endpoint(client, database):
         "origins": "Brazil"
     }
 
-    response = client.patch('/banana/1',
+    response = client.patch('/bananas/1',
                             data=json.dumps(update_body),
                             headers={"Content-Type": "application/json"})
     expected_output = {"id": 1, "color": "Yellow", "origins": "Brazil"}
@@ -183,7 +183,7 @@ def test__banana_update_endpoint(client, database):
         "color": "Black"
     }
 
-    response = client.patch('/banana/1',
+    response = client.patch('/bananas/1',
                             data=json.dumps(update_body),
                             headers={"Content-Type": "application/json"})
     expected_output = {"id": 1, "color": "Black", "origins": "Brazil"}
@@ -192,7 +192,7 @@ def test__banana_update_endpoint(client, database):
     assert response.get_json() == expected_output
 
     # Case for wrong banana id
-    response = client.patch('/banana/2',
+    response = client.patch('/bananas/2',
                             data=json.dumps(update_body),
                             headers={"Content-Type": "application/json"})
     expected_output = {"Message": "Not found banana with id: 2"}
@@ -202,7 +202,7 @@ def test__banana_update_endpoint(client, database):
 
     # Case for patch empty data
 
-    response = client.patch('/banana/1',
+    response = client.patch('/bananas/1',
                             data=json.dumps({}),
                             headers={"Content-Type": "application/json"})
 
@@ -214,7 +214,7 @@ def test__banana_update_endpoint(client, database):
     irrelevant_body = {
         "origins": 123
     }
-    response = client.patch('/banana/1',
+    response = client.patch('/bananas/1',
                             data=json.dumps(irrelevant_body),
                             headers={"Content-Type": "application/json"})
 
@@ -230,7 +230,7 @@ def test__banana_delete_endpoint(client, database):
     database.session.commit()
 
     # Case for removing existing banana
-    response = client.delete('/banana/1')
+    response = client.delete('/bananas/1')
 
     assert response.status_code == 204
 
@@ -239,7 +239,7 @@ def test__banana_delete_endpoint(client, database):
 
     # Case for removing non-existing banana
 
-    response = client.delete('/banana/1')
+    response = client.delete('/bananas/1')
     expected_output = {"Message": "Not found banana with id: 1"}
 
     assert response.status_code == 404
