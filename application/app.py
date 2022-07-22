@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from flask import Flask, jsonify, request
 from marshmallow import ValidationError
 
-from application.models import User, Banana
-from application.schemas import banana_schema, bananas_schema
+from application.models import User, Banana, Palm
+from application.schemas import banana_schema, bananas_schema, palm_schema, palms_schema
 
 
 def create_app(config_name):
@@ -94,5 +96,94 @@ def create_app(config_name):
             db.session.add(banana)
             db.session.commit()
             response = banana_schema.dump(Banana.query.get(banana.id))
+            return response, 201
+
+    @app.route("/palm/<id>", methods=['GET', 'PATCH', 'DELETE'])
+    def palm(id):
+        if request.method == 'GET':
+            palm = Palm.query.get_or_404(id)
+            response = palm_schema.dump(palm)
+            return response
+
+        elif request.method == 'PATCH':
+            palm = Palm.query.filter(Palm.id == id).one_or_none()
+            body = request.get_json()
+            if not body:
+                response = {"Message": "No input data provided"}
+                return response, 400
+
+            if 'age' in body:
+                age = body["age"]
+                now = datetime.now()
+                created_at = f'{now.year - age}-{now.month}-{now.day} {now.hour}:{now.minute}:{now.second}'
+                body.update({"created_at": created_at})
+                del body['age']
+
+            if palm:
+                try:
+                    data = palm_schema.load(body, partial=('location', 'max_banana_in_bundle',))
+                except ValidationError as e:
+                    return e.messages, 422
+            else:
+                response = {"Message": f"Not found palm with id: {id}"}
+                return response, 404
+
+            Palm.query.filter(Palm.id == id).update(body)
+            db.session.commit()
+            return palm_schema.dump(palm), 200
+
+        elif request.method == 'DELETE':
+            palm = Palm.query.filter(Palm.id == id).one_or_none()
+            if palm:
+                db.session.delete(palm)
+                db.session.commit()
+                response = {"Message": "Successfully deleted palm"}
+                return response, 204
+            else:
+                response = {
+                    "Message": f"Not found palm with id: {id}"
+                }
+                return response, 404
+
+    @app.route("/palm", methods=["GET", "POST"])
+    def handle_palm():
+        if request.method == 'GET':
+            palms = Palm.query.all()
+            response = jsonify(palms_schema.dump(palms))
+            return response
+
+        if request.method == "POST":
+            body = request.get_json()
+            if not body:
+                response = {"Message": "No input data provided"}
+                return response, 400
+
+            try:
+                location = body["location"]
+            except Exception as e:
+                response = {'location': ['Missing data for required field.']}
+                return response, 422
+
+            try:
+                max_banana_in_bundle = body["max_banana_in_bundle"]
+            except Exception as e:
+                response = {'max_banana_in_bundle': ['Missing data for required field.']}
+                return response, 422
+
+            palm = {
+                "location": location,
+                "max_banana_in_bundle": max_banana_in_bundle
+            }
+
+            if 'age' in body:
+                age = body["age"]
+                now = datetime.now()
+                created_at = f'{now.year - age}-{now.month}-{now.day} {now.hour}:{now.minute}:{now.second}'
+                palm.update({"created_at": created_at})
+
+            palm = Palm(**palm)
+            db.session.add(palm)
+            db.session.commit()
+            response = palm_schema.dump(Palm.query.get(palm.id))
             return response, 201
     return app
